@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eskimo Brothers · HACI ⇄ MACI — the symbiotic ACI stack, human and machine</title>
+<meta name="description" content="The Eskimo Brothers: HACI (human-facing, Markdown, the document) and MACI (machine-facing, JSON, the message) — two members of one ACI Core that convert into each other. Same conversation, two skins. Live HACI⇄MACI converter + the full spec→impl→validator→torture→audit-to-failure stack pipeline. David Lee Wise / Bridge-Burners LLC, ROOT0.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500&family=Spectral:ital,wght@0,300;0,400;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--sea:#070e16;--line:rgba(150,180,210,.16);--lead:#8fa6bc;--lead-dim:#52647a;
+    --parch:#e6edf4;--parch-dim:#aebccc;--gold:#d9a441;--frost:#6fd0ea;--ice:#9fe0f0;
+    --human:#b070c8;--machine:#46c7d8;--ai:#44cc7a;--evid:#d9a441;--code:#73b3a3;--decision:#e06b9a;}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--sea);color:var(--parch);font-family:"Spectral",Georgia,serif;line-height:1.58;
+    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 520px at 18% -10%,rgba(176,112,200,.10),transparent 60%),radial-gradient(900px 520px at 84% -8%,rgba(70,199,216,.12),transparent 60%);
+    display:flex;justify-content:center}
+  .card{max-width:800px;width:100%;padding:34px 24px 56px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--frost)}
+  h1{font-family:"Cormorant Garamond",serif;font-weight:300;font-size:clamp(40px,10vw,66px);margin:6px 0 0;line-height:.94;letter-spacing:-.5px}
+  h1 .gk{display:block;font-size:.26em;color:var(--lead);letter-spacing:.04em;margin-top:9px;font-style:italic}
+  .sub{font-style:italic;font-weight:300;color:var(--parch-dim);font-size:16.5px;margin:16px 0 0;max-width:66ch}
+  .sub b{font-style:normal;font-weight:400}
+  .sub .h{color:var(--human)} .sub .m{color:var(--machine)}
+  h2{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--frost);
+    margin:34px 0 12px;font-weight:500;border-top:1px solid var(--line);padding-top:18px;opacity:.92}
+  p.body{font-size:15px;color:var(--parch-dim);max-width:66ch} p.body b{color:var(--parch)}
+  code.k{font-family:"IBM Plex Mono",monospace;font-size:.9em;color:var(--frost)}
+
+  .brothers{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+  @media(max-width:560px){.brothers{grid-template-columns:1fr}}
+  .bro{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:rgba(0,0,0,.2)}
+  .bro.h{border-color:rgba(176,112,200,.35)} .bro.m{border-color:rgba(70,199,216,.35)}
+  .bro .who{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.1em;font-weight:700}
+  .bro.h .who{color:var(--human)} .bro.m .who{color:var(--machine)}
+  .bro .nm{font-family:"Cormorant Garamond",serif;font-size:26px;font-weight:400;margin:2px 0 6px}
+  .bro .row{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--parch-dim);line-height:1.95}
+  .bro .row span{color:var(--lead-dim)}
+  .bro a{color:var(--frost);text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:11px}
+
+  .lab{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}
+  .side{flex:1;min-width:300px}
+  .sidehd{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+  .sidehd.h{color:var(--human)} .sidehd.m{color:var(--machine)}
+  textarea{width:100%;height:330px;background:#060b12;border:1px solid var(--line);border-radius:8px;color:var(--parch);
+    font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;padding:12px;resize:vertical;tab-size:2}
+  textarea:focus{outline:none;border-color:rgba(111,208,234,.5)}
+  pre.json{height:330px;overflow:auto;margin:0;background:#060b12;border:1px solid var(--line);border-radius:8px;padding:12px;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;line-height:1.5;white-space:pre;color:var(--parch-dim)}
+  pre.json .key{color:var(--machine)} pre.json .str{color:var(--ai)} pre.json .role{font-weight:700}
+  .conv-meta{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--lead);margin-top:8px;line-height:1.7}
+  .conv-meta b{color:var(--frost)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0;align-items:center}
+  button{cursor:pointer;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.18));border:1px solid var(--line);
+    border-radius:5px;color:var(--parch);font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.03em;padding:8px 12px;transition:.15s}
+  button:hover{border-color:rgba(111,208,234,.5);background:rgba(111,208,234,.08)}
+  button.primary{border-color:rgba(111,208,234,.55);color:var(--frost)}
+  .hint{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--lead-dim)}
+
+  .core{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px;background:rgba(0,0,0,.2);
+    border:1px solid var(--line);border-radius:8px;padding:14px 16px;align-items:baseline}
+  .core .n{font-family:"IBM Plex Mono",monospace;color:var(--frost);font-weight:700}
+  .core .t{color:var(--parch-dim)} .core .t b{color:var(--parch)}
+
+  .pipe{position:relative;margin-top:6px;padding-left:26px}
+  .pipe:before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--human),var(--machine))}
+  .stage{position:relative;margin:0 0 16px}
+  .stage:before{content:"";position:absolute;left:-22px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--sea);border:2px solid var(--frost)}
+  .stage .st{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:700;color:var(--ice)}
+  .stage .sd{font-size:13.5px;color:var(--parch-dim);max-width:62ch}
+  .stage .chips{margin-top:5px;display:flex;gap:5px;flex-wrap:wrap}
+  .stage .chip{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--lead);border:1px solid var(--line);border-radius:20px;padding:2px 9px}
+
+  .note{margin-top:30px;border-top:1px solid var(--line);padding-top:15px;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;line-height:1.85;color:var(--lead-dim)}
+  .note b{color:var(--frost);font-weight:500}
+  .foot{display:flex;justify-content:space-between;margin-top:22px;font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;color:var(--lead-dim);letter-spacing:.05em;flex-wrap:wrap;gap:6px}
+  .foot a{color:var(--frost);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">ACI family · the symbiotic pair · the stack pipeline</div>
+  <h1>Eskimo Brothers<span class="gk">Human ACI ⇄ Machine ACI · the same conversation, two skins</span></h1>
+  <p class="sub">Two members of one <b>ACI Core</b>. <b class="h">HACI</b> is the human-facing skin — Markdown, the <i>document</i>, who-said-what for people. <b class="m">MACI</b> is the machine-facing skin — JSON, the <i>message</i>, who-said-what between agents. They aren't two formats; they're <b>one conversation</b> that converts losslessly between document and message form. Brothers, because they share — here, the same exchange. <span style="opacity:.7">(The name's a wink. The plumbing is serious.)</span></p>
+
+  <h2>the two brothers</h2>
+  <div class="brothers">
+    <div class="bro h">
+      <div class="who">MEMBER H · the human skin</div>
+      <div class="nm">HACI</div>
+      <div class="row"><span>form&nbsp;&nbsp;&nbsp;</span> Markdown profile · the document<br>
+      <span>marks&nbsp;&nbsp;</span> <code class="k">!</code> human · <code class="k">?</code> question · <code class="k">&gt;</code> evidence · case<br>
+      <span>reads&nbsp;&nbsp;</span> single-pass, deterministic, no LLM<br>
+      <span>ext&nbsp;&nbsp;&nbsp;&nbsp;</span> .haci</div>
+      <div style="margin-top:8px"><a href="https://davidwise01.github.io/haci/">open the live parser ↗</a></div>
+    </div>
+    <div class="bro m">
+      <div class="who">MEMBER M · the machine skin</div>
+      <div class="nm">MACI</div>
+      <div class="row"><span>form&nbsp;&nbsp;&nbsp;</span> JSON envelope · the message<br>
+      <span>marks&nbsp;&nbsp;</span> role · authority · <code class="k">refs</code> (decision chain)<br>
+      <span>reads&nbsp;&nbsp;</span> the audit is the graph itself<br>
+      <span>ext&nbsp;&nbsp;&nbsp;&nbsp;</span> .maci</div>
+      <div style="margin-top:8px"><a href="https://davidwise01.github.io/maci/">open the live DAG ↗</a></div>
+    </div>
+  </div>
+
+  <h2>the live converter — write to one brother, watch the other</h2>
+  <p class="body" style="margin:0 0 10px">Type <b>HACI</b> on the left. It is parsed by role and emitted as a <b>MACI</b> message stream on the right — each block becomes a message, adjacency becomes <code class="k">refs</code>. Flip the arrow to go back. The round-trip is honest about its one lossy seam: HACI's line-adjacency only <i>implies</i> the graph that MACI's <code class="k">refs</code> state outright.</p>
+  <div class="controls" style="margin-bottom:10px">
+    <button class="primary" id="dir">HACI → MACI</button>
+    <button id="reset">↺ reset example</button>
+    <span class="hint">conversion ported from <b style="color:var(--frost)">maci.py</b> (haci_blocks_to_maci / maci_to_haci_text)</span>
+  </div>
+  <div class="lab">
+    <div class="side">
+      <div class="sidehd h" id="lhd">HACI · the document</div>
+      <textarea id="left" spellcheck="false"></textarea>
+    </div>
+    <div class="side">
+      <div class="sidehd m" id="rhd">MACI · the message stream</div>
+      <pre class="json" id="right"></pre>
+    </div>
+  </div>
+  <div class="conv-meta" id="meta"></div>
+
+  <h2>the shared core — what both inherit</h2>
+  <div class="core">
+    <span class="n">1</span><span class="t"><b>Deterministic communication.</b> role is assigned by rule, never inferred — no NLP, no model in the loop.</span>
+    <span class="n">2</span><span class="t"><b>Explicit attribution.</b> every line / message names its author and authority.</span>
+    <span class="n">3</span><span class="t"><b>Intent ↔ evidence separation.</b> a command, a proposal, and a measured fact are never the same token.</span>
+    <span class="n">4</span><span class="t"><b>Minimal syntax.</b> HACI adds two symbols; MACI adds two roles. The grammar fits on an index card.</span>
+    <span class="n">5</span><span class="t"><b>External anchoring.</b> valid Markdown / valid JSON — readable and parseable by tools that never heard of ACI.</span>
+  </div>
+  <p class="body" style="margin-top:10px">Extensible by <b>accretion, never revision</b>: <code class="k">DACI</code> (distributed) is the reserved third brother. New members inherit the core; they don't rewrite it.</p>
+
+  <h2>the stack pipeline — how a brother is forged</h2>
+  <p class="body" style="margin:0 0 14px">Neither brother is hand-waved into being. Each runs the same gauntlet: write the spec in its own format, build the reference parser, lower to an intermediate form, then attack it — a project validator that grows version by version, doubled torture suites, and an adversarial engine that runs <i>until it finds a failure</i>, captures it, and drives the next patch.</p>
+  <div class="pipe">
+    <div class="stage"><div class="st">1 · THE SPEC — written in its own format</div>
+      <div class="sd"><code class="k">haci-spec.haci</code> is HACI describing HACI; <code class="k">maci-design.haci</code> is MACI's design, also written in HACI ("eat the family's dog food"). The HACI spec <b>self-hosts</b>: it parses correctly under its own rules.</div>
+      <div class="chips"><span class="chip">self-hosting</span><span class="chip">102 blocks · 5,303 chars</span><span class="chip">8 roles, 0 ambiguity</span></div></div>
+    <div class="stage"><div class="st">2 · THE REFERENCE IMPL</div>
+      <div class="sd"><code class="k">haci.py</code> — ~150 lines, a ~40-line lexer, one regex, O(n), zero role-specific special cases. <code class="k">maci.py</code> — Message + Conversation, the eight validation rules, Kahn's-algorithm cycle detection, chain-walk, and the HACI↔MACI converter.</div>
+      <div class="chips"><span class="chip">haci.py</span><span class="chip">maci.py</span><span class="chip">single-pass</span></div></div>
+    <div class="stage"><div class="st">3 · THE IR</div>
+      <div class="sd">A lowered intermediate representation (<code class="k">haci_ir.py</code> → <code class="k">sample.ir.json</code>): blocks as structured, tool-addressable nodes — the bridge from text to machine handling.</div>
+      <div class="chips"><span class="chip">haci v5</span><span class="chip">.ir.json</span></div></div>
+    <div class="stage"><div class="st">4 · THE PROJECT VALIDATOR — v1.1 → v2.8</div>
+      <div class="sd">Beyond a single file: validates an entire HACI <i>project</i> tree (memory / code / runtime) and its commit gates. Grows by patch — e.g. v2.7's <b>pending-parent-scope gate</b>: a child symbol may not stay committed beneath a pending or uncommitted parent, even in non-strict mode.</div>
+      <div class="chips"><span class="chip">v1.1</span><span class="chip">v2.0–v2.6</span><span class="chip">v2.7 parent-gate</span><span class="chip">v2.8</span></div></div>
+    <div class="stage"><div class="st">5 · THE TORTURE SUITES</div>
+      <div class="sd">Doubled adversarial test batteries (<code class="k">×2</code>, v2.4 → v2.8) that hammer the validator with malformed, deeply-nested, and contradictory projects to confirm it holds.</div>
+      <div class="chips"><span class="chip">torture ×2</span><span class="chip">v24 · v25 · v26 · v27 · v28</span></div></div>
+    <div class="stage"><div class="st">6 · AUDIT / TORTURE-TO-FAILURE</div>
+      <div class="sd">The engine that <b>runs until it breaks something</b>: it fuzzes projects until a real failure is found, writes it to <code class="k">FAILURE_FOUND/</code> with a reason, and that captured failure becomes the next version's patch. The audit that found v2.6's gap is exactly why v2.7 exists.</div>
+      <div class="chips"><span class="chip">audit-to-failure</span><span class="chip">FAILURE_FOUND</span><span class="chip">failure → patch → repeat</span></div></div>
+  </div>
+
+  <div class="note">
+    <b>what this is.</b> a domain for the symbiotic two-member stack: <b>HACI</b> (human, the H member) and <b>MACI</b> (machine, the M member), each a <b>defensive publication</b> under the Technical Disclosure Commons (prior art, not patents), both inheriting the <b>ACI Core</b>. The full development pipeline — spec → reference impl → IR → project-validator (v1.1→v2.8) → torture suites → audit-to-failure — is real and ships in the family repos. The converter above runs the actual ported logic in your browser.
+    <br><b>honest line.</b> the validators enforce HACI <i>project structure</i> and commit-scope rules; the "audit-to-failure" is adversarial fuzzing, not a formal proof. v0.1 specs, working PoCs, a third brother (<code class="k">DACI</code>) reserved.
+    <br><b>the name.</b> "eskimo brothers" is the joke; the truth under it is symbiosis — two skins on one conversation, neither complete without the other.
+  </div>
+
+  <div class="foot">
+    <span>ACI · HACI ⇄ MACI · 2026-06-26</span>
+    <span>David Lee Wise · Bridge-Burners LLC · <a href="https://davidwise01.github.io/aci-namespace/">the ACI namespace ↗</a> · <a href="https://davidwise01.github.io/aci/">the standard ↗</a></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  // ── HACI lexer (ported from hmd.py / haci.py) ──
+  function classify(line){
+    var s=line.trim();
+    if(!s) return ['BLANK',''];
+    if(s[0]==='!'){ var b=s.slice(1).trim(); if(b[0]==='?') return ['HUMAN_QUESTION',b.slice(1).trim()]; return ['HUMAN',b]; }
+    if(s[0]==='?'){ var b=s.slice(1).trim(); if(b[0]==='!') return ['HUMAN_QUESTION',b.slice(1).trim()];
+      for(var i=0;i<b.length;i++){ if(/[a-zA-Z]/.test(b[i])) return [/[A-Z]/.test(b[i])?'HUMAN_QUESTION':'AI_QUESTION', b]; }
+      return ['AI_QUESTION',b]; }
+    if(s[0]==='>') return ['EVIDENCE', s.slice(1).trim()];
+    if(/^#{1,6}\s/.test(s)) return ['HEADING', s.replace(/^#+/,'').trim()];
+    if(s.slice(0,4)==='<!--') return ['META', s];
+    for(var i=0;i<s.length;i++){ if(/[a-zA-Z]/.test(s[i])) return [/[A-Z]/.test(s[i])?'DOCUMENTATION':'AI', s]; }
+    return ['DOCUMENTATION', s];
+  }
+  function parse(text){
+    var lines=text.split('\n'), blocks=[], inF=false, buf=[];
+    for(var i=0;i<lines.length;i++){ var line=lines[i];
+      if(/^\s*(`{3,}|~{3,})/.test(line)){
+        if(inF){ buf.push(line); blocks.push({role:'CODE',content:buf.slice(1,-1).join('\n')}); buf=[]; inF=false; continue; }
+        else { inF=true; buf=[line]; continue; } }
+      if(inF){ buf.push(line); continue; }
+      var r=classify(line); if(r[0]==='BLANK'||r[0]==='META'||r[0]==='HEADING') continue;
+      blocks.push({role:r[0],content:r[1]});
+    }
+    if(buf.length) blocks.push({role:'CODE',content:buf.slice(1).join('\n')});
+    return blocks;
+  }
+  // ── HACI → MACI (haci_blocks_to_maci) ──
+  var H2M={HUMAN:'COMMAND',HUMAN_QUESTION:'QUESTION',AI:'PROPOSAL',AI_QUESTION:'QUESTION',DOCUMENTATION:'DOCUMENT',EVIDENCE:'EVIDENCE',CODE:'CODE'};
+  var M2H={COMMAND:'HUMAN',PROPOSAL:'AI',EVIDENCE:'EVIDENCE',QUESTION:'AI_QUESTION',CODE:'CODE',DOCUMENT:'DOCUMENTATION',DECISION:'HUMAN',DELEGATE:'HUMAN'};
+  function blocksToMaci(blocks){
+    var msgs=[], prev=null, i=0;
+    blocks.forEach(function(b){ var role=H2M[b.role]; if(!role) return; i++;
+      var human=(b.role==='HUMAN'||b.role==='HUMAN_QUESTION');
+      var m={maci:'0.1.0',id:'h-'+('00'+i).slice(-3),from:human?'human':'ai-agent',role:role,
+             authority:human?'sovereign':'advisory',content:b.content};
+      if(prev) m.refs=[prev];
+      msgs.push(m); prev=m.id; });
+    return msgs;
+  }
+  // ── MACI → HACI (maci_to_haci_text) ──
+  function maciToHaci(msgs){
+    var out=['<!-- HACI v0.1 -->',''];
+    msgs.forEach(function(m){
+      if(m.role==='COMMAND') out.push('! '+m.content.toUpperCase());
+      else if(m.role==='DECISION') out.push('! '+(m.status||'DECISION').toUpperCase()+': '+m.content+' (refs: '+((m.refs||[]).join(', '))+')');
+      else if(m.role==='EVIDENCE') out.push('> '+m.content);
+      else if(m.role==='QUESTION') out.push('? '+m.content);
+      else if(m.role==='CODE') out.push('```\n'+m.content+'\n```');
+      else if(m.role==='PROPOSAL') out.push(/^[A-Z]/.test(m.content)?m.content.charAt(0).toLowerCase()+m.content.slice(1):m.content);
+      else out.push(m.content);
+      out.push('');
+    });
+    return out.join('\n');
+  }
+  function jsonHL(msgs){
+    return '[\n'+msgs.map(function(m){
+      var parts=[]; for(var k in m){ var v=m[k];
+        var val = (k==='refs')?'['+v.map(function(x){return '"'+x+'"';}).join(', ')+']':'"'+(''+v).replace(/"/g,'\\"').replace(/\n/g,'\\n')+'"';
+        var cls = k==='role'?' role':'';
+        parts.push('<span class="key">"'+k+'"</span>: <span class="str'+cls+'">'+val.replace(/[<>]/g,function(c){return c==='<'?'&lt;':'&gt;';})+'</span>'); }
+      return '  {'+parts.join(', ')+'}';
+    }).join(',\n')+'\n]';
+  }
+
+  var EX_HACI=['<!-- HACI v0.1 -->','! BUILD THE TASK SCHEDULER','The scheduler manages work across worker threads.',
+    'use a min-heap for priority extraction','? should timeout be per-task or global?',
+    '> benchmarks show work-stealing is 2.3x faster','! USE WORK-STEALING','> all 47 tests passing'].join('\n');
+
+  var left=document.getElementById('left'), right=document.getElementById('right'),
+      meta=document.getElementById('meta'), lhd=document.getElementById('lhd'), rhd=document.getElementById('rhd'),
+      dir=document.getElementById('dir'); var H2Mdir=true;
+
+  function renderH2M(){
+    var blocks=parse(left.value), msgs=blocksToMaci(blocks);
+    right.innerHTML=jsonHL(msgs);
+    var roles={}; msgs.forEach(function(m){roles[m.role]=(roles[m.role]||0)+1;});
+    meta.innerHTML='<b>'+blocks.length+'</b> HACI blocks → <b>'+msgs.length+'</b> MACI messages · '
+      +Object.keys(roles).map(function(r){return roles[r]+' '+r;}).join(' · ')
+      +' · adjacency became <b>refs</b> (the lossy seam: HACI implies the chain, MACI states it)';
+  }
+  function renderM2H(){
+    // parse the JSON-ish left as MACI (forgiving): expect a stream the user pasted, else from example
+    var msgs;
+    try{ msgs=JSON.parse(left.value); if(!Array.isArray(msgs)) throw 0; }
+    catch(e){ msgs=blocksToMaci(parse(EX_HACI)); }
+    right.textContent=maciToHaci(msgs);
+    meta.innerHTML='<b>'+msgs.length+'</b> MACI messages → HACI text · COMMAND→<code class="k">!</code> · PROPOSAL→lowercase · EVIDENCE→<code class="k">&gt;</code> · DECISION/DELEGATE→<code class="k">!</code>';
+  }
+  function update(){ if(H2Mdir) renderH2M(); else renderM2H(); }
+
+  dir.addEventListener('click',function(){
+    H2Mdir=!H2Mdir;
+    if(H2Mdir){ dir.textContent='HACI → MACI'; lhd.textContent='HACI · the document'; lhd.className='sidehd h';
+      rhd.textContent='MACI · the message stream'; rhd.className='sidehd m'; right.className='json';
+      left.value=EX_HACI; }
+    else { dir.textContent='MACI → HACI'; lhd.textContent='MACI · the message stream'; lhd.className='sidehd m';
+      rhd.textContent='HACI · the document'; rhd.className='sidehd h'; right.className='json';
+      left.value=JSON.stringify(blocksToMaci(parse(EX_HACI)),null,1); }
+    update();
+  });
+  document.getElementById('reset').addEventListener('click',function(){
+    H2Mdir=true; dir.textContent='HACI → MACI'; lhd.textContent='HACI · the document'; lhd.className='sidehd h';
+    rhd.textContent='MACI · the message stream'; rhd.className='sidehd m';
+    left.value=EX_HACI; update();
+  });
+  left.addEventListener('input',update);
+  left.value=EX_HACI; update();
+})();
+</script>
+</body>
+</html>
